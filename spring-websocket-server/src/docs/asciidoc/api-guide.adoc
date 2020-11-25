@@ -1,0 +1,35 @@
+ifndef::snippets[]
+:snippets: ../../../build/generated-snippets
+endif::[]
+= API Document
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+
+[[introduction]]
+== 소개
+Spring Rest Docs API
+
+=== 공통 응답 정보
+
+응답 정보:
+
+|===
+|Path|Type|Description
+
+|`success`
+|`Boolean`
+|API 통신 성공 유무
+
+|`errMsg`
+|`String`
+|실패에 따른 에러 메시지
+
+|`body`
+|`Object`
+|응답에 대한 Body 정보
+
+|===
