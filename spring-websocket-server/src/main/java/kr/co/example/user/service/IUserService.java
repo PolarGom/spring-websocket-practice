@@ -27,12 +27,4 @@ public interface IUserService {
      * @throws CommonException
      */
     void deleteUser(String id) throws CommonException;
-
-    /**
-     * 모든 사용자 가져오기
-     *
-     * @return result 사용자 목록 정보
-     * @throws CommonException
-     */
-    IResultBodyResponse findAllUser() throws CommonException;
 }

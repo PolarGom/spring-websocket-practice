@@ -1,4 +1,4 @@
-package kr.co.example.user.repository;
+package kr.co.example.user.dao;
 
 import kr.co.example.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

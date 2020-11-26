@@ -25,9 +25,9 @@ public class UserController {
     private final IUserService userServiceImpl;
 
     /**
-     * 사용자 추가
+     * 사용자 생성
      *
-     * @param request 추가 할 사용자 정보
+     * @param request 생성 할 사용자 정보
      * @return result 응답 결과
      */
     @PostMapping
@@ -50,16 +50,5 @@ public class UserController {
         userServiceImpl.deleteUser(userId);
 
         return ResponseEntity.ok(ResultResponse.builder().build());
-    }
-
-    /**
-     * 모든 사용자 가져오기
-     *
-     * @return result 응답 결과
-     */
-    @GetMapping
-    public ResponseEntity<ResultResponse> findAllUser() {
-
-        return ResponseEntity.ok(ResultResponse.builder().body(userServiceImpl.findAllUser()).build());
     }
 }

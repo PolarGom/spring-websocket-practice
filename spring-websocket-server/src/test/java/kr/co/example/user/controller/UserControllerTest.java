@@ -7,13 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,12 +29,10 @@ public class UserControllerTest extends CommonTest {
     @Test
     public void testCreateUser() throws Exception {
 
-        String id = "HelloWorld";
-        String name = "홍길동";
+        String userId = "HelloWorld";
 
         String content = this.objectMapper.writeValueAsString(UserCreateRequest.builder()
-                .id(id)
-                .name(name)
+                .userId(userId)
                 .build());
 
         this.mockMvc.perform(RestDocumentationRequestBuilders.post("/users")
@@ -44,8 +40,7 @@ public class UserControllerTest extends CommonTest {
                 .content(content))
                 .andDo(document("create-user",
                         requestFields(
-                                fieldWithPath("id").type(JsonFieldType.STRING).description("사용자 아이디"),
-                                fieldWithPath("name").type(JsonFieldType.STRING).description("사용자 이름")
+                                fieldWithPath("userId").type(JsonFieldType.STRING).description("사용자 아이디")
                         ),
                         responseFields(
                                 fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 유무"),
@@ -56,14 +51,27 @@ public class UserControllerTest extends CommonTest {
                 .andExpect(status().isOk());
     }
 
-    @DisplayName("사용자 생성 시 이름 누락되어 에러")
+    @DisplayName("사용자 생성 시 요청 바디를 누락하여 에러")
     @Test
-    public void testFailCreateUser() throws Exception {
+    public void testFailEmptyBodyCreateUser() throws Exception {
 
-        String id = "HelloWorld";
+        this.mockMvc.perform(RestDocumentationRequestBuilders.post("/users")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errMsg").value("이름을 입력해 주세요."));
+
+    }
+
+    @DisplayName("사용자 생성 시 이름 정규식으로 인한 에러")
+    @Test
+    public void testFailRegexpCreateUser() throws Exception {
+
+        String userId = "HelloWorld 안녕";
 
         String content = this.objectMapper.writeValueAsString(UserCreateRequest.builder()
-                .id(id)
+                .userId(userId)
                 .build());
 
         this.mockMvc.perform(RestDocumentationRequestBuilders.post("/users")
@@ -72,7 +80,7 @@ public class UserControllerTest extends CommonTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.errMsg").value("이름을 입력해 주세요."));
+                .andExpect(jsonPath("$.errMsg").value("아이디는 영문 및 숫자로 포함해서 1 ~ 50자리 이내로 입력해 주세요."));
 
     }
 
@@ -80,9 +88,9 @@ public class UserControllerTest extends CommonTest {
     @Test
     public void testDeleteUser() throws Exception {
 
-        String id = "honggildong";
+        String userId = "honggildong";
 
-        this.mockMvc.perform(RestDocumentationRequestBuilders.delete("/users/{id}", id))
+        this.mockMvc.perform(RestDocumentationRequestBuilders.delete("/users/{userId}", userId))
                 .andDo(document("delete-user",
                         pathParameters(
                             parameterWithName("id").description("삭제 할 사용자 아이디")
@@ -100,31 +108,12 @@ public class UserControllerTest extends CommonTest {
     @Test
     public void testFailDeleteUser() throws Exception {
 
-        String id = "HelloWorld";
+        String userId = "HelloWorld";
 
-        this.mockMvc.perform(RestDocumentationRequestBuilders.delete("/users/{id}", id))
+        this.mockMvc.perform(RestDocumentationRequestBuilders.delete("/users/{userId}", userId))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.errMsg").value("아이디가 존재하지 않습니다."));
-    }
-
-    @DisplayName("사용자 목록 조회")
-    @Test
-    public void testFindAllUser() throws Exception {
-
-        this.mockMvc.perform(RestDocumentationRequestBuilders.get("/users"))
-                .andDo(document("get-users",
-                        responseFields(
-                                fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("성공 유무"),
-                                fieldWithPath("errMsg").type(JsonFieldType.STRING).description("실패시 에러 메시지"),
-                                fieldWithPath("body").type(JsonFieldType.OBJECT).description("성공에 대한 바디 정보"),
-                                fieldWithPath("body.list").type(JsonFieldType.ARRAY).description("사용자 목록"),
-                                fieldWithPath("body.list.[].id").type(JsonFieldType.STRING).description("사용자 아이디"),
-                                fieldWithPath("body.list.[].name").type(JsonFieldType.STRING).description("사용자 이름")
-                        ))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.body.list").isArray());
     }
 }

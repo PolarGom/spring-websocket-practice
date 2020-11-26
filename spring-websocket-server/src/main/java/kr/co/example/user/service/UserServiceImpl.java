@@ -1,12 +1,9 @@
 package kr.co.example.user.service;
 
 import kr.co.example.common.CommonException;
-import kr.co.example.common.dto.IResultBodyResponse;
-import kr.co.example.common.dto.ResultListResponse;
 import kr.co.example.user.dto.UserCreateRequest;
-import kr.co.example.user.dto.UserResponse;
 import kr.co.example.user.entity.User;
-import kr.co.example.user.repository.IUserDao;
+import kr.co.example.user.dao.IUserDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +20,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserServiceImpl implements IUserService {
 
-    private final IUserDao userRepositoryImpl;
+    private final IUserDao userDaoImpl;
 
     @Override
     public void createUser(UserCreateRequest request) throws CommonException {
@@ -32,9 +29,8 @@ public class UserServiceImpl implements IUserService {
 
             log.info("생성 할 사용자 정보: {}", request.toString());
 
-            userRepositoryImpl.save(User.builder()
-                    .id(request.getId())
-                    .name(request.getName())
+            userDaoImpl.save(User.builder()
+                    .userId(request.getUserId())
                     .build());
         } catch ( Exception e ) {
 
@@ -49,33 +45,19 @@ public class UserServiceImpl implements IUserService {
 
             log.info("삭제 할 사용자 아이디: {}", id);
 
-            User user = userRepositoryImpl.findById(id).orElseThrow(() -> {
+            User user = userDaoImpl.findById(id).orElseThrow(() -> {
                 String errMsg = "아이디가 존재하지 않습니다.";
 
                 return new CommonException(new NullPointerException(errMsg), errMsg);
             });
 
-            userRepositoryImpl.delete(user);
+            userDaoImpl.delete(user);
         } catch ( CommonException e ) {
 
             throw e;
         } catch ( Exception e ) {
 
             throw new CommonException(e, "사용자 삭제 중 오류가 발생하였습니다.");
-        }
-    }
-
-    @Override
-    public IResultBodyResponse findAllUser() throws CommonException {
-
-        try {
-
-            return ResultListResponse.builder()
-                    .list(UserResponse.listFrom(userRepositoryImpl.findAll()))
-                    .build();
-        } catch ( Exception e ) {
-
-            throw new CommonException(e, "사용자 목록 조회 중 오류가 발생하였습니다.");
         }
     }
 }
