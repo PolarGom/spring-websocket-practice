@@ -14,7 +14,7 @@ import javax.validation.constraints.Pattern;
 @Builder
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
